@@ -22,7 +22,7 @@ public class Serializer {
 	public static String serialize (Object obj){
 		Class<? extends Object> type = obj.getClass();
 		StringBuilder sb = new StringBuilder();
-		sb.append("<value>");
+		sb.append("value");
 		if ( obj instanceof Integer ||
 				obj instanceof Short  )
 		{

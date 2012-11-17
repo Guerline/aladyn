@@ -12,8 +12,8 @@ public class TestSerializer {
 	public static void main(String[] args){
 		String[] testArray = {"hey"};
 		boolean testBool = true;
-		Calendar testDate = Calendar.getInstance();
-		testDate.set(2012, 12, 31);
+		Date testDate = Calendar.getInstance().getTime();
+		
 		
 		ArrayList<Object> testArrayList = new ArrayList<Object>();
 		testArrayList.add('c');

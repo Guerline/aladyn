@@ -22,7 +22,7 @@ public class Serializer {
 	public static String serialize (Object obj){
 		Class<? extends Object> type = obj.getClass();
 		StringBuilder sb = new StringBuilder();
-		sb.append("<value>");
+		sb.append("value");
 		if ( obj instanceof Integer ||
 				obj instanceof Short  )
 		{
@@ -47,7 +47,7 @@ public class Serializer {
 			if (obj instanceof Date )
 				d= (Date) obj;
 			else
-				d= ((Calendar)obj).getTime();
+				
 			SimpleDateFormat dateformatter = new SimpleDateFormat
 					  ("yyyyMMdd");
 			sb.append("<dateTime.iso8601>");

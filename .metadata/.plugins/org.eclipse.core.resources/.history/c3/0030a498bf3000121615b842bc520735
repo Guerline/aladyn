@@ -22,7 +22,7 @@ public class Serializer {
 	public static String serialize (Object obj){
 		Class<? extends Object> type = obj.getClass();
 		StringBuilder sb = new StringBuilder();
-		sb.append("<value>");
+		sb.append("value");
 		if ( obj instanceof Integer ||
 				obj instanceof Short  )
 		{
@@ -31,10 +31,11 @@ public class Serializer {
 		else if (obj instanceof Boolean) 
 		{
 			sb.append("<boolean> ");
-			if(((Boolean)obj))
+			/*if(((Boolean)obj))
 				sb.append("1");
 			else
-				sb.append("0");
+				sb.append("0");*/
+			sb.append((Integer) obj);
 			sb.append(" </boolean>");
 		}
 		else if (obj instanceof Double || obj instanceof Float) 
@@ -43,11 +44,7 @@ public class Serializer {
 		}
 		else if (obj instanceof Date || obj instanceof Calendar)
 		{
-			Date d;
-			if (obj instanceof Date )
-				d= (Date) obj;
-			else
-				d= ((Calendar)obj).getTime();
+			Date d= (Date) obj;
 			SimpleDateFormat dateformatter = new SimpleDateFormat
 					  ("yyyyMMdd");
 			sb.append("<dateTime.iso8601>");
@@ -64,11 +61,11 @@ public class Serializer {
 		{
 			//Construire byte
 			byte[] base64 = (byte[]) obj;
-			sb.append("<base64>");
+			sb.append("<value><base64>");
 			for(int i = 0; i < base64.length; i++) {
 				sb.append(base64[i]);
 			}
-			sb.append("</base64>");
+			sb.append("</base64></value>");
 		}
 		else if (obj instanceof Object[]){
 			
@@ -123,7 +120,6 @@ public class Serializer {
 			XMLRMISerializable xmlrmiobject = (XMLRMISerializable) obj;
 			sb.append(xmlrmiobject.toXML());
 		}
-		sb.append("</value>");
 		return sb.toString();
 	}
 	

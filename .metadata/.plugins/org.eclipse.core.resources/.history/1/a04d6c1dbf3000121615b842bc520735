@@ -22,53 +22,48 @@ public class Serializer {
 	public static String serialize (Object obj){
 		Class<? extends Object> type = obj.getClass();
 		StringBuilder sb = new StringBuilder();
-		sb.append("<value>");
 		if ( obj instanceof Integer ||
 				obj instanceof Short  )
 		{
-			sb.append("<int>" + (Integer) obj +"</int>");
+			sb.append("<value> <int>" + (Integer) obj +"</int> </value>");
 		}
 		else if (obj instanceof Boolean) 
 		{
-			sb.append("<boolean> ");
+			sb.append("<value> <boolean> ");
 			if(((Boolean)obj))
 				sb.append("1");
 			else
 				sb.append("0");
-			sb.append(" </boolean>");
+			sb.append(" </boolean> </value>");
 		}
 		else if (obj instanceof Double || obj instanceof Float) 
 		{
-			sb.append("<double>" + obj + "</double>");
+			sb.append("<value><double>" + obj + "</double></value>");
 		}
 		else if (obj instanceof Date || obj instanceof Calendar)
 		{
-			Date d;
-			if (obj instanceof Date )
-				d= (Date) obj;
-			else
-				d= ((Calendar)obj).getTime();
+			Date d= (Date) obj;
 			SimpleDateFormat dateformatter = new SimpleDateFormat
 					  ("yyyyMMdd");
-			sb.append("<dateTime.iso8601>");
+			sb.append("<value><dateTime.iso8601>");
 			sb.append(dateformatter.format(d) + "T");
-			dateformatter.applyPattern("HH:MM:ss");
+			dateformatter.applyPattern("hhMMss");
 			sb.append(dateformatter.format(d));
-			sb.append("</dateTime.iso8601>");
+			sb.append("</dateTime.iso8601></value>");					;
 		}
 		else if(obj instanceof String || obj instanceof Character)
 		{
-			sb.append("<string>" +obj.toString() + "</string>");
+			sb.append("<value><string>" +obj.toString() + "</string></value>");
 		}
 		else if (type == byte[].class) 
 		{
 			//Construire byte
 			byte[] base64 = (byte[]) obj;
-			sb.append("<base64>");
+			sb.append("<value><base64>");
 			for(int i = 0; i < base64.length; i++) {
 				sb.append(base64[i]);
 			}
-			sb.append("</base64>");
+			sb.append("</base64></value>");
 		}
 		else if (obj instanceof Object[]){
 			
@@ -123,7 +118,6 @@ public class Serializer {
 			XMLRMISerializable xmlrmiobject = (XMLRMISerializable) obj;
 			sb.append(xmlrmiobject.toXML());
 		}
-		sb.append("</value>");
 		return sb.toString();
 	}
 	
