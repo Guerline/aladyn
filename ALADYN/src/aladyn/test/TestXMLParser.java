@@ -19,8 +19,8 @@ public class TestXMLParser {
 				"</methods>"+
 				"</object>" + "</value></param></params></methodCall>";
 
-		Point p1 = new Point(4.4,5.4,"esdc");
-		ObjectsMap.addObject("100", p1);
+		//Point p1 = new Point(4.4,5.4,"esdc");
+		//ObjectsMap.addObject("100", p1);
 		ArrayList<Object> paramsList = new ArrayList<Object>();
 		String methodName = XMLParser.parseCall(xmlRecords, paramsList);
 		for( Object obj : paramsList) {

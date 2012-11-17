@@ -29,7 +29,7 @@ public class Client {
 			
 			//Recuperer la method response
 			message = (String)in.readObject();
-			System.out.println("client> " + message);
+			//System.out.println("client> " + message);
 			ArrayList<Object> paramsList = new ArrayList<Object>();
 			paramsList = XMLParser.parseResponse(message);
 			

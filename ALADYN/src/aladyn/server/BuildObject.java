@@ -79,11 +79,11 @@ public class BuildObject {
 		}
 		
 	}
-	public void addDateField(String fieldName,String type, int year, int month, int day, int hours, int minute, int seconds) {
+	public void addDateField(String fieldName, String date) {
 		checkFrozen();
 		CtField field;
 		try {
-			field = CtField.make("java.util.Date "+ fieldName + " = new java.util.GregorianCalendar("+ year + ","+ month + "," + day + "," + hours + ","+ minute + ","+ seconds+ ").getTime();",  buildClass);
+			field = CtField.make("java.util.Date "+ fieldName + " = new java.util.GregorianCalendar("+ date + ").getTime();",  buildClass);
 			buildClass.addField(field);
 		} catch (CannotCompileException e) {
 			// TODO Auto-generated catch block

@@ -1,6 +1,8 @@
 package aladyn.test_classes;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.Calendar;
+import java.util.Date;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
@@ -19,11 +21,11 @@ public class Point implements XMLRMISerializable {
 	@XMLRMIField(serializationName="b",serializationType="double")
 	protected double b ;
 	@XMLRMIField(serializationName="marque",serializationType="string")
-	protected String marque ;
+	protected Calendar marque ;
 	/*@XMLRMIField(serializationName="next",serializationType="object")
 	protected Point next;*/
 	
-	public Point(double a, double b, String marque){
+	public Point(double a, double b, Calendar marque){
 		this.a=a;
 		this.b=b;
 		this.marque=marque;
@@ -87,7 +89,7 @@ public class Point implements XMLRMISerializable {
 		
 		//Block for methods
 		
-		res_methods = "<method language=\"java\">public String toString() { a=3.3 +b; return String.valueOf(a); }</method> ";
+		res_methods = "<method language=\"java\">public String toString() { return marque.set(2111, 12, 14); }</method> ";
 		res_methods = "<methods>\n" + res_methods + "</methods>\n";
 		res.append(res_methods);
 		/*

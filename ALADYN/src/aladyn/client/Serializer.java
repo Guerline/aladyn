@@ -128,7 +128,7 @@ public class Serializer {
 	      }
 		else
 		{
-			System.out.println(obj.getClass().getInterfaces().toString());
+			System.out.println(obj.getClass().getSuperclass().toString());
 			XMLRMISerializable xmlrmiobject = (XMLRMISerializable) obj;
 			sb.append(xmlrmiobject.toXML());
 		}

@@ -7,17 +7,28 @@ import aladyn.client.Serializer;
 
 public class BuildResponse {
 
-	public static String buildXmlResponse(ArrayList<Object> tab) {
+	public String buildXmlResponse(ArrayList<Object> tab) {
 		StringBuilder xmlResponse = new StringBuilder();
 		xmlResponse.append("<methodResponse>" + "<params>");
-		for(int i = 0; i < tab.size(); i++) {
-			xmlResponse.append("<param>"
-					+ Serializer.serialize(tab.get(i)) + "</param>");
-		}
+		
 		xmlResponse.append("</params>" + "</methodResponse>");
 		return(xmlResponse.toString());
 	}
 
+	public String buildParams(ArrayList<Object> tab, StringBuilder xmlResponse){
+		for(int i = 0; i < tab.size(); i++) {
+			xmlResponse.append("<param>");
+			String result = Serializer.serialize(tab.get(i));
+			if(result != null){
+				xmlResponse.append(result);
+			}
+			else{
+				return buildXmlFaultResponse(1, "Parameters couldn't be serialized");
+			}
+			xmlResponse.append("</param>");
+		}
+		return xmlResponse.toString();
+	}
 	public String buildXmlFaultResponse(int faultCode, String faultString) {
 		StringBuilder xmlFaultResponse = new StringBuilder();
 		Hashtable<String, Object> response = new Hashtable<String, Object>();

@@ -1,9 +1,11 @@
 package aladyn.parser;
 import java.io.IOException;
 import java.io.StringReader;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 
 import javassist.CtClass;
 import javassist.CtField;
@@ -259,6 +261,21 @@ public class XMLParser {
 		else if (valueElementContent.getNodeName() == "boolean")
 		{
 			bo.addBoolField(fieldName, Boolean.parseBoolean(fieldValue)) ;
+		}
+		else if (valueElementContent.getNodeName() == "dateTime.iso8601")
+		{
+			SimpleDateFormat dateformatter = new SimpleDateFormat
+					  ("yyyyMMdd'T'HH:MM:ss");
+			Date d;
+			try {
+				d = dateformatter.parse(fieldValue);
+				dateformatter.applyPattern("yyyy','MM','dd','HH','MM','ss");
+				bo.addDateField(fieldName,dateformatter.format(d)) ;
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
 		else if (valueElementContent.getNodeName() == "base64")
 		{
