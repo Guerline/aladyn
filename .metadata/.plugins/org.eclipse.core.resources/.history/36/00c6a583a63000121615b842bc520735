@@ -1,0 +1,9 @@
+package aladyn.test;
+
+import aladyn.client.Serializer;
+
+public class TestSerializer {
+	public static void main(String[] args){
+		System.out.println(Serializer.serialize(true));
+	}
+}

@@ -1,0 +1,7 @@
+package aladyn.test;
+
+public class TestSerializer {
+	public static void main(String[] args){
+		
+	}
+}

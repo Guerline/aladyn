@@ -20,19 +20,24 @@ public class Serializer {
 
 	public static String serialize (Object obj){
 		Class<? extends Object> type = obj.getClass();
-
+		StringBuilder sb = new StringBuilder();
 		if ( obj instanceof Integer ||
 				obj instanceof Short  )
 		{
-			return("<value> <int>" + (Integer) obj +"</int> </value>");
+			sb.append("<value> <int>" + (Integer) obj +"</int> </value>");
 		}
 		else if (obj instanceof Boolean) 
 		{
-			return("<value> <boolean> " + (Boolean)obj + " </boolean> </value>");
+			sb.append("<value> <boolean> ");
+			if(((Boolean)obj))
+				sb.append("1");
+			else
+				sb.append("0");
+			sb.append(" </boolean> </value>");
 		}
 		else if (obj instanceof Double || obj instanceof Float) 
 		{
-			return("<value><double>" + obj + "</double></value>");
+			sb.append("<value><double>" + obj + "</double></value>");
 		}
 		else if (obj instanceof Date || obj instanceof Calendar)
 		{
@@ -43,21 +48,20 @@ public class Serializer {
 		}
 		else if(obj instanceof String || obj instanceof Character)
 		{
-			return("<value><string>" +obj.toString() + "</string></value>");
+			sb.append("<value><string>" +obj.toString() + "</string></value>");
 		}
 		else if (type == byte[].class) 
 		{
 			//Construire byte
 			byte[] base64 = (byte[]) obj;
-			StringBuffer xml = new StringBuffer("<value><base64>");
+			sb.append("<value><base64>");
 			for(int i = 0; i < base64.length; i++) {
-				xml.append(base64[i]);
+				sb.append(base64[i]);
 			}
-			xml.append("</base64></value>");
-			return(xml.toString());
+			sb.append("</base64></value>");
 		}
 		else if (obj instanceof Object[]){
-			StringBuilder sb = new StringBuilder();
+			
 			sb.append("<array><data>");
 			Object[] arrayObj = (Object[])obj;
 			Class<?> commonClass = getCommonSuperClassFromArray(arrayObj);
@@ -66,10 +70,8 @@ public class Serializer {
 				sb.append(serialize(commonClass.cast(o)));
 			}
 			sb.append("</data></array>");
-			return sb.toString();
 		}
 		else if (obj instanceof List){
-			StringBuilder sb = new StringBuilder();
 			sb.append("<array><data>");
 			List<?> listObj = (List<?>)obj;
 			Class<?> commonClass = getCommonSuperClassFromArray(listObj.toArray());
@@ -78,10 +80,8 @@ public class Serializer {
 				sb.append(serialize(commonClass.cast(o)));
 			}
 			sb.append("</array></data>");
-			return sb.toString();
 		}
 		else if (obj instanceof Collection){
-			StringBuilder sb = new StringBuilder();
 			sb.append("<array><data>");
 			Collection<?> collectionObj = (Collection<?>)obj;
 			Class<?> commonClass = getCommonSuperClassFromArray(collectionObj.toArray());
@@ -91,10 +91,8 @@ public class Serializer {
 				sb.append(serialize(commonClass.cast(i.next())));
 			}
 			sb.append("</array></data>");
-			return sb.toString();
 		}
 		else if (obj instanceof Map) {
-			StringBuilder sb = new StringBuilder();
 			 sb.append( "<struct>" );
 
 		        Map<?, ?> mapObj     = ( Map<?,?> ) obj;
@@ -108,14 +106,14 @@ public class Serializer {
 		            sb.append( "</member>" );
 		        }
 		        sb.append( "</struct>" );
-			return sb.toString();
 		}
 		else
 		{
 			System.out.println(obj.getClass().getInterfaces().toString());
 			XMLRMISerializable xmlrmiobject = (XMLRMISerializable) obj;
-			return xmlrmiobject.toXML();
+			sb.append(xmlrmiobject.toXML());
 		}
+		return sb.toString();
 	}
 	
 	public static Class<?> getCommonSuperClassFromArray(Object[] objs)
@@ -125,11 +123,12 @@ public class Serializer {
 		int n = objs.length;
 		if(n != 0){
 			myClass = objs[0].getClass();
-			while(myClass.getClass().equals(Object.class))
+			while(!myClass.equals(Object.class))
 			{
 				classesArray.add(myClass);
 				myClass = myClass.getSuperclass();
 			}
+			classesArray.add(myClass);
 			for( int i=1; i < objs.length;i++ )
 			{
 				myClass = objs[i].getClass();
@@ -137,6 +136,7 @@ public class Serializer {
 					myClass = myClass.getSuperclass();
 				}
 				myCommonSuperClass = myClass;
+				System.out.println(myCommonSuperClass.toString());
 			}
 			return myCommonSuperClass;
 		}

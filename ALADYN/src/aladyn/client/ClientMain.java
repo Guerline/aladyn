@@ -17,7 +17,6 @@ public class ClientMain {
 			Point p1=new Point(1, 2, arrayString);
 			ObjectsMap.addObject("100",p1);
 			Object[] objects = {p1, 1.3};
-			
 			//Serialisation des parametres et de la methode a appeler
 			BuildCall buildCall= new BuildCall();
 			callXml = buildCall.buildMethodCall("display", objects);
