@@ -10,7 +10,7 @@ public class BuildResponse {
 	public String buildXmlResponse(ArrayList<Object> tab) {
 		StringBuilder xmlResponse = new StringBuilder();
 		xmlResponse.append("<methodResponse>" + "<params>");
-		
+		buildParams(tab, xmlResponse);
 		xmlResponse.append("</params>" + "</methodResponse>");
 		return(xmlResponse.toString());
 	}

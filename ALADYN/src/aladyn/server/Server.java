@@ -21,11 +21,12 @@ public class Server {
 	private String methodCall;
 
 
-	public  String receive() {
+	public void receive() {
 		ArrayList<Object> arrayParams = new ArrayList<Object>(); 
 		String methodName;
 		
-		try {
+		try
+		{
 			socket = new ServerSocket(2004, 10);
 			System.out.println("Je suis le serveur. J'attends qu'un client se conecte");
 			connection = socket.accept();
@@ -34,10 +35,9 @@ public class Server {
 			out = new ObjectOutputStream(connection.getOutputStream());
 			out.flush();
 			in = new ObjectInputStream(connection.getInputStream());
-			try{
+			try
+			{
 				methodCall = (String)in.readObject();
-				//System.out.println("Voici ce que j'ai reçu : " + methodCall);
-
 				methodName = XMLParser.parseCall(methodCall, arrayParams);
 				System.out.println("hey hey hey!");
 				for( Object obj :arrayParams ) {
@@ -65,7 +65,6 @@ public class Server {
 				ioException.printStackTrace();
 			}
 		}	
-		return methodCall;
 	}
 
 	public void send(String message){
