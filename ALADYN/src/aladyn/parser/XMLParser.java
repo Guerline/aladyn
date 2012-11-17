@@ -1,9 +1,13 @@
 package aladyn.parser;
 import java.io.IOException;
 import java.io.StringReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import javassist.CtClass;
+import javassist.CtField;
+import javassist.CtField.Initializer;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -152,6 +156,7 @@ public class XMLParser {
 				}
 				else {
 					Element valueObjectChild = (Element)(elementValue.getElementsByTagName("object").item(0));
+					System.out.println(createObjectFromElement((Element)valueObjectChild).toString() + "hahaha");
 					paramsList.add(createObjectFromElement((Element)valueObjectChild));
 				}
 							
@@ -194,7 +199,7 @@ public class XMLParser {
 		{
 			oid =element.getAttribute("oid");
 			obj = new BuildObject("Object" + oid);
-			obj.addField("private String oid=\""+oid + "\";" );
+			obj.addStringField("oid",oid);
 			NodeList nodesFieldList = element.getElementsByTagName("field");
 			for (int j = 0; j< nodesFieldList.getLength(); j++ )
 			{
@@ -220,7 +225,7 @@ public class XMLParser {
 				e.printStackTrace();
 				return null;
 			}
-		} else if (element.getNodeName() == "integer") {
+		} else if (element.getNodeName() == "int") {
 			return new Integer(getCharacterDataFromElement(element));
 		}  else if (element.getNodeName() == "double") {
 			return new Double(getCharacterDataFromElement(element));
@@ -233,9 +238,48 @@ public class XMLParser {
 		String fieldName;
 		fieldName = fieldElement.getAttribute("name");
 		Element valueElementContent = parseValue(fieldElement);
+		Initializer init;
+		CtClass type;
 		
+		String fieldValue = getCharacterDataFromElement(valueElementContent);
+		StringBuilder sb = new StringBuilder();
+		
+		if (valueElementContent.getNodeName() == "int") 
+		{
+			bo.addIntField(fieldName, Integer.parseInt(fieldValue));
+		}  
+		else if (valueElementContent.getNodeName() == "double")
+		{
+			bo.addDoubleField(fieldName,Double.parseDouble(fieldValue));
+		} 
+		else if (valueElementContent.getNodeName() == "string")
+		{
+			bo.addStringField(fieldName,fieldValue);
+		}
+		else if (valueElementContent.getNodeName() == "boolean")
+		{
+			bo.addBoolField(fieldName, Boolean.parseBoolean(fieldValue)) ;
+		}
+		else if (valueElementContent.getNodeName() == "base64")
+		{
+			//TODO
+			//return "public Byte " + fieldName + " = \"" + fieldValue + "\";" ;
+		}
+		else if (valueElementContent.getNodeName() == "array")
+		{
+			NodeList dataElement = valueElementContent.getElementsByTagName("data");
+			if (dataElement.getLength() == 1){
+				NodeList arrayItemList =((Element) dataElement.item(0)).getElementsByTagName("value");
+				
+			//bo.addField(fieldName, CtClass.booleanType, ) ;
+		}
+		else
+		{
+			
+		}
+		}
 		//Construire la chaine de caractere permettant de creer le champ
-		bo.addField(getStringForField(fieldName,valueElementContent ));
+		//bo.addField(fieldName,getType(valueElementContent),getInitializer(valueElementContent));
 	}
 	
 	public static void addMethodforObjectFromElement ( Element methodElement, BuildObject bo) {
@@ -248,9 +292,11 @@ public class XMLParser {
 	}
 	
 	
-	public static String getStringForField( String fieldName ,Element valueElementContent){
+	/*public static String getStringForField( String fieldName, Element valueElementContent){
 		String fieldValue = getCharacterDataFromElement(valueElementContent);
-		if (valueElementContent.getNodeName() == "integer") 
+		StringBuilder sb = new StringBuilder();
+		
+		if (valueElementContent.getNodeName() == "int") 
 		{
 			return "public int " + fieldName + "=" + fieldValue + ";";
 		}  
@@ -264,7 +310,7 @@ public class XMLParser {
 		}
 		else if (valueElementContent.getNodeName() == "boolean")
 		{
-			return "public Boolean " + fieldName + " = \"" + fieldValue + "\";" ;
+			return "public Boolean " + fieldName + " = \"" + Boolean.parseBoolean(fieldValue) + "\";" ;
 		}
 		else if (valueElementContent.getNodeName() == "base64")
 		{
@@ -272,6 +318,9 @@ public class XMLParser {
 		}
 		else if (valueElementContent.getNodeName() == "array")
 		{
+			sb.append("public Object[] " + fieldName + "= {");
+			
+			sb.append("} ;");
 			return "public Object[] " + fieldName + " = \"" + fieldValue + "\";" ;
 		}
 		else
@@ -280,5 +329,62 @@ public class XMLParser {
 		}
 	}
 	
-
+	
+	/*public static String getWellFormedValue(Element valueElementContent ){
+		String fieldValue = getCharacterDataFromElement(valueElementContent);
+		String result = "";
+		if (valueElementContent.getNodeName() == "integer" && valueElementContent.getNodeName() == "double") 
+		{
+			result = fieldValue ;
+		}
+		else if (valueElementContent.getNodeName() == "string")
+		{
+			result = "\"" + fieldValue + "\"" ;
+		}
+		else if (valueElementContent.getNodeName() == "boolean")
+		{
+			if (fieldValue == "0")
+				result = "false";
+			else if (fieldValue == "1")
+				result = "true";
+			else 
+				result = "";
+				//TODO
+		}
+		else if (valueElementContent.getNodeName() == "base64")
+		{
+			result  = "\"" + fieldValue + "\";" ;
+			//TODO
+		}
+		else if (valueElementContent.getNodeName() == "array")
+		{
+			NodeList dataElement = valueElementContent.getElementsByTagName("data");
+			if (dataElement.getLength() == 1){
+				result = "{";
+				NodeList arrayItemList =((Element) dataElement.item(0)).getElementsByTagName("value");
+				for (int i=0; i < arrayItemList.getLength(); i++){
+					Element valueElement = (Element) arrayItemList.item(i);
+					Element childElement = parseValue(valueElement);
+					result += getWellFormedValue(childElement);
+					if ( i < arrayItemList.getLength() - 1)
+						result += ",";
+					else
+						result += "}";
+				}
+			}
+			else
+			{
+				//TODO
+				// Return chaine de caractere vide ou lance une exception
+			}
+		}
+		else if (valueElementContent.getNodeName() == "struct"){
+			
+		}
+		else if (valueElementContent.getNodeName() == "datetime.iso8601"){
+			SimpleDateFormat dateformatter = new SimpleDateFormat ("yyyyMMdd'T'HH:MM:ss");
+			
+		}
+		return result;
+	}*/
 }

@@ -1,12 +1,15 @@
 package aladyn.server;
 
 import java.lang.reflect.Field;
+import java.util.Calendar;
+import java.util.HashMap;
 
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtConstructor;
 import javassist.CtField;
+import javassist.CtField.Initializer;
 import javassist.CtMethod;
 import javassist.CtNewConstructor;
 import javassist.CtNewMethod;
@@ -19,18 +22,93 @@ public class BuildObject {
 	private Class<?> myClass = null;
 	private boolean isCreated = false;
 	private ClassPool pool;
+	private HashMap<String,CtClass> hm;
 
 	public BuildObject(String nameClass) {
 		pool = ClassPool.getDefault();
 		buildClass = pool.makeClass(nameClass);
 	}
 	
-	public void addField(String srcField) {
+	public void addIntField(String fieldName,int i) {
+		checkFrozen();
+		CtField field;
+		try {
+			field = new  CtField(CtClass.intType ,fieldName, buildClass) ;
+			buildClass.addField(field, CtField.Initializer.constant(i));
+		} catch (CannotCompileException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public void addBoolField(String fieldName,boolean b) {
+		checkFrozen();
+		CtField field;
+		try {
+			field = new  CtField(CtClass.booleanType,fieldName, buildClass) ;
+			buildClass.addField(field, CtField.Initializer.constant(b));
+		} catch (CannotCompileException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	public void addStringField(String fieldName,String s) {
+		checkFrozen();
+		CtField field;
+		try {
+			field = CtField.make("String " + fieldName + "= \"" + s +"\";", buildClass) ;
+			field.setModifiers(Modifier.PUBLIC);
+			buildClass.addField(field);
+		} catch (CannotCompileException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	public void addDoubleField(String fieldName,double d) {
+		checkFrozen();
+		CtField field;
+		try {
+			field = new  CtField(CtClass.doubleType,fieldName, buildClass) ;
+			buildClass.addField(field,CtField.Initializer.constant(d));
+		} catch (CannotCompileException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	public void addDateField(String fieldName,String type, int year, int month, int day, int hours, int minute, int seconds) {
+		checkFrozen();
+		CtField field;
+		try {
+			field = CtField.make("java.util.Date "+ fieldName + " = new java.util.GregorianCalendar("+ year + ","+ month + "," + day + "," + hours + ","+ minute + ","+ seconds+ ").getTime();",  buildClass);
+			buildClass.addField(field);
+		} catch (CannotCompileException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	public void addField(String fieldName,String type,Initializer init) {
+		checkFrozen();
+		CtField field;
+		try {
+			field = new  CtField(hm.get(type),fieldName, buildClass) ;
+			buildClass.addField(field);
+		} catch (CannotCompileException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	public void addField(String fieldName, CtClass type,Initializer init) {
 		checkFrozen();
 		CtField field;
 		
 		try {
-			field =  CtField.make(srcField, buildClass) ;
+			field = new  CtField(type,fieldName, buildClass) ;
 			buildClass.addField(field);
 		} catch (CannotCompileException e) {
 			// TODO Auto-generated catch block

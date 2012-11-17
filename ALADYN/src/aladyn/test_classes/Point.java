@@ -19,11 +19,11 @@ public class Point implements XMLRMISerializable {
 	@XMLRMIField(serializationName="b",serializationType="double")
 	protected double b ;
 	@XMLRMIField(serializationName="marque",serializationType="string")
-	protected String[] marque ;
+	protected String marque ;
 	/*@XMLRMIField(serializationName="next",serializationType="object")
 	protected Point next;*/
 	
-	public Point(double a, double b, String[] marque){
+	public Point(double a, double b, String marque){
 		this.a=a;
 		this.b=b;
 		this.marque=marque;
@@ -93,7 +93,7 @@ public class Point implements XMLRMISerializable {
 		/*
 		 * Needs to add object key and tag
 		 */
-		return "<value>\n<object oid=\"100\">\n" + res + "</object>\n</value>\n";
+		return "<object oid=\"100\">\n" + res + "</object>\n";
 	}
 
 	@Override
@@ -139,10 +139,6 @@ public class Point implements XMLRMISerializable {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		
-
-
-
 		}
 	}
 	

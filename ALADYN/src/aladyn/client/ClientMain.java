@@ -14,12 +14,13 @@ public class ClientMain {
 		
 			// Creer les parametres objets
 			String[] arrayString = {"coco"};
-			Point p1=new Point(1, 2, arrayString);
+			Point p1=new Point(1, 2, "cococ");
 			ObjectsMap.addObject("100",p1);
 			Object[] objects = {p1, 1.3};
 			//Serialisation des parametres et de la methode a appeler
 			BuildCall buildCall= new BuildCall();
 			callXml = buildCall.buildMethodCall("display", objects);
+			System.out.println(callXml);
 			/*callXml = "<methodCall><methodName>haha</methodName><params>" +
 					"<param><value>"+
 					"<object oid=\"100\"><fields>" +

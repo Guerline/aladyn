@@ -8,6 +8,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
+
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -19,6 +21,8 @@ import aladyn.parser.XMLParser;
 
 public class Serializer {
 
+	
+	// TESTED
 	public static String serialize (Object obj){
 		Class<? extends Object> type = obj.getClass();
 		StringBuilder sb = new StringBuilder();
@@ -49,11 +53,9 @@ public class Serializer {
 			else
 				d= ((Calendar)obj).getTime();
 			SimpleDateFormat dateformatter = new SimpleDateFormat
-					  ("yyyyMMdd");
+					  ("yyyyMMdd'T'HH:MM:ss");
 			sb.append("<dateTime.iso8601>");
-			sb.append(dateformatter.format(d) + "T");
-			dateformatter.applyPattern("HH:MM:ss");
-			sb.append(dateformatter.format(d));
+			sb.append(dateformatter.format(d) );
 			sb.append("</dateTime.iso8601>");
 		}
 		else if(obj instanceof String || obj instanceof Character)
@@ -62,7 +64,6 @@ public class Serializer {
 		}
 		else if (type == byte[].class) 
 		{
-			//Construire byte
 			byte[] base64 = (byte[]) obj;
 			sb.append("<base64>");
 			for(int i = 0; i < base64.length; i++) {
@@ -100,7 +101,7 @@ public class Serializer {
 			{
 				sb.append(serialize(commonClass.cast(i.next())));
 			}
-			sb.append("</array></data>");
+			sb.append("</data></array>");
 		}
 		else if (obj instanceof Map) {
 			 sb.append( "<struct>" );
@@ -117,6 +118,14 @@ public class Serializer {
 		        }
 		        sb.append( "</struct>" );
 		}
+		else if (obj instanceof Vector) {
+	         Vector<?> vector =  (Vector<?>) obj;
+	         sb.append("<array><data>");
+	         for (Object item : vector) {
+	            sb.append(serialize(item));
+	         }
+	         sb.append("</data></array>");
+	      }
 		else
 		{
 			System.out.println(obj.getClass().getInterfaces().toString());
@@ -127,6 +136,9 @@ public class Serializer {
 		return sb.toString();
 	}
 	
+	
+	
+	//TESTING
 	public static Class<?> getCommonSuperClassFromArray(Object[] objs)
 	{
 		Class<?> myClass, myCommonSuperClass = myClass = objs[0].getClass();
@@ -148,6 +160,10 @@ public class Serializer {
 				}
 				myCommonSuperClass = myClass;
 				System.out.println(myCommonSuperClass.toString());
+				Iterator<?> it = classesArray.iterator();
+				while(it.hasNext() && !it.next().equals(myCommonSuperClass)){
+					it.remove();
+				}
 			}
 			return myCommonSuperClass;
 		}
