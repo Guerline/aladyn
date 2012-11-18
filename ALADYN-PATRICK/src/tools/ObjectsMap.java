@@ -22,9 +22,10 @@ public class ObjectsMap {
 	
 	
 	public static String getKey ( Object objectSerializable) {
-		for(Entry<String, Object> entryInMap : map.entrySet()){
-			if( entryInMap.getValue().equals(objectSerializable))
+		for(Entry<String, Object> entryInMap : map.entrySet()) {
+			if(entryInMap.getValue().equals(objectSerializable)) {
 				return entryInMap.getKey();
+			}
 		}
 		return null;
 	}

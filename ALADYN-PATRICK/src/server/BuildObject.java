@@ -60,7 +60,7 @@ public class BuildObject {
 	/**
 	 * methode pour ajouter un champ à l'objet à reconstruire
 	 * @param fieldName le nom du champ pour l'objet à recontruire
-	 * @param i la valeur du champ
+	 * @param b la valeur du champ
 	 */
 	public void addBoolField(String fieldName, boolean b) {
 		CtField field;
@@ -115,13 +115,7 @@ public class BuildObject {
 	/**
 	 * methode pour ajouter un champ à l'objet à reconstruire
 	 * @param fieldName le nom du champ pour l'objet à recontruire
-	 * @param type la valeur du champ
-	 * @param year l'année de la date
-	 * @param mounth le mois de la date
 	 * @param date le jour de la date
-	 * @param hour l'heure de la date
-	 * @param minutes les minutes de la date
-	 * @param seconds les secondes de la date
 	 */
 	public void addDateField(String fieldName, String date) {
 		CtField field;
@@ -266,10 +260,6 @@ public class BuildObject {
 			System.err.println(e + "error accessing the classe");
 		}
 		System.out.println(myClass.toString());
-		/*for(int i = 0; i < myClass.getDeclaredFields().length; i++)
-		{
-			System.out.println(myClass.getDeclaredFields()[i]);
-		}*/
 		for(int i = 0; i < buildClass.getDeclaredMethods().length; i++) {
 			System.out.println(buildClass.getDeclaredMethods()[i]);
 		}

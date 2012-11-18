@@ -21,8 +21,10 @@ public class Client {
 	public void start(String message) {
 		try {
 			socket = new Socket("localhost", 2004);
+			
 			System.out.println(" : " + socket.getInetAddress().getHostName());
-
+			System.out.println("Je suis le client. Je me connecte au server");
+			
 			//Envoyer le method call
 			out = new ObjectOutputStream(socket.getOutputStream());
 			out.flush();
@@ -37,7 +39,6 @@ public class Client {
 
 			for(Object o : paramsList) {
 				System.out.println(o.getClass().getName());
-			//System.out.println(((Point)paramsList.get(0)).getA());
 			}
 		}catch(UnknownHostException e) {
 			System.err.println(e + "from client : Host not found");

@@ -42,22 +42,18 @@ public class Server {
 				String response = methodCaller.callMethod(methodName, arrayParams, this);
 				send(response);
 				
-			}
-			catch(ClassNotFoundException classnot){
+			}catch(ClassNotFoundException classnot){
 				System.err.println("Je ne reconnait pas le format de ce que l'on m'a envoyé! DSL!");
 			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		finally{
+		}catch (IOException e) {
+			System.err.println(e + "error in/out");
+		}finally {
 			//Fermer la connection
 			try{
 				in.close();
 				out.close();
 				socket.close();
-			}
-			catch(IOException ioException){
+			}catch(IOException ioException) {
 				ioException.printStackTrace();
 			}
 		}	

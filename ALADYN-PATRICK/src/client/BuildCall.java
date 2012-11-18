@@ -8,7 +8,7 @@ public class BuildCall {
 	 * @param objects la liste des objets à sérialiser
 	 * @return les paramètres de l'objets sous forme sérialisés
 	 */
-	protected String buildParams(Object[] objects) {
+	public String buildParams(Object[] objects) {
 		String s = "";
 		
 		for(Object object : objects) {
@@ -22,7 +22,7 @@ public class BuildCall {
 	 * @param objects la liste des objets à sérialiser
 	 * @return les methodes de l'objets sous forme sérialisés
 	 */
-	protected String buildMethod(String method) {
+	public String buildMethod(String method) {
 		return "<methodName>" + method + "</methodName>\n";
 	}
 	
@@ -37,6 +37,6 @@ public class BuildCall {
 		
 		s += buildMethod(method);
 		s += buildParams(objects);
-		return "<methodCall>\n" + s + "</methodCall>";
+		return "<?xml version=\"1.0\"?><methodCall>\n" + s + "</methodCall>";
 	}
 }

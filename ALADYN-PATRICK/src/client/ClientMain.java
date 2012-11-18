@@ -9,8 +9,9 @@ public class ClientMain {
 	public static void main(String[] args) {
 		String callXml ;
 		// Creer les parametres objets
-		String[] arrayString = {"coco"};
-		Point p1 = new Point(1, 2, "cococ");
+		Integer[] m = {new Integer(3)};
+		Point p1 = new Point(1, 2,m );
+		
 		ObjectsMap.addObject(p1);
 		Object[] objects = {p1, 1.3};
 		//Serialisation des parametres et de la methode a appeler

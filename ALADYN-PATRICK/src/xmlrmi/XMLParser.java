@@ -21,7 +21,7 @@ import org.xml.sax.SAXException;
 
 import server.BuildObject;
 
-import client.Serializer;
+import client.Updater;
 
 /*
 import java.io.IOException;
@@ -93,7 +93,7 @@ public class XMLParser {
 					Element paramElement = (Element) nodesParam.item(i);
 					Node childNode = parseValue(paramElement) ;
 					if(childNode != null){
-						value = Serializer.getValueFromElement(childNode); 	
+						value = Updater.getValueFromElement(childNode); 	
 						paramsList.add(value);	
 					}
 					//System.out.println(paramElement.toString());
@@ -259,9 +259,8 @@ public class XMLParser {
 		else if (valueElementContent.getNodeName() == "dateTime.iso8601")
 		{
 			SimpleDateFormat dateformatter = new SimpleDateFormat("yyyyMMdd'T'HH:MM:ss");
-			Date d;
 			try {
-				d = dateformatter.parse(fieldValue);
+				Date d = dateformatter.parse(fieldValue);
 				dateformatter.applyPattern("yyyy','MM','dd','HH','MM','ss");
 				bo.addDateField(fieldName,dateformatter.format(d)) ;
 			} catch (ParseException e) {

@@ -10,12 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import org.w3c.dom.Attr;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import tools.ObjectsMap;
 import xmlrmi.XMLRMISerializable;
 
@@ -32,19 +26,18 @@ public class Serializer {
 			return "<value>void</value>";
 		}
 		
-		Class<? extends Object> type = obj.getClass();
 		StringBuilder sb = new StringBuilder();
 		sb.append("<value>");
 		if(obj instanceof Integer || obj instanceof Short) {
 			sb.append("<int>" + (Integer) obj +"</int>");
 		}else if(obj instanceof Boolean) {
-			sb.append("<boolean> ");
+			sb.append("<boolean>");
 			if((Boolean)obj) {
 				sb.append("1");
 			}else {
 				sb.append("0");
 			}
-			sb.append(" </boolean>");
+			sb.append("</boolean>");
 		}else if(obj instanceof Double || obj instanceof Float) {
 			sb.append("<double>" + obj + "</double>");
 		}else if (obj instanceof Date || obj instanceof Calendar) {
@@ -60,14 +53,14 @@ public class Serializer {
 			sb.append("</dateTime.iso8601>");
 		}else if(obj instanceof String || obj instanceof Character) {
 			sb.append("<string>" +obj.toString() + "</string>");
-		}else if(type == byte[].class) {
+		}else if(obj instanceof byte[]) {
 			byte[] base64 = (byte[]) obj;
 			sb.append("<base64>");
 			for(int i = 0; i < base64.length; i++) {
 				sb.append(base64[i]);
 			}
 			sb.append("</base64>");
-		}else if(obj instanceof Object[]) {
+		}else if(obj.getClass().isArray()) {
 			sb.append("<array><data>");
 			Object[] arrayObj = (Object[])obj;
 			Class<?> commonClass = getCommonSuperClassFromArray(arrayObj);
@@ -125,6 +118,108 @@ public class Serializer {
 		return sb.toString();
 	}
 	
+	
+	
+	public static String serializeAs(Object obj, String type) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<value>");
+		if(type.equals("int")) {
+			sb.append("<int>" + (Integer) obj +"</int>");
+		}else if(type.equals("boolean")) {
+			sb.append("<boolean> ");
+			if((Boolean)obj) {
+				sb.append("1");
+			}else {
+				sb.append("0");
+			}
+			sb.append(" </boolean>");
+		}else if(type.equals("double")) {
+			sb.append("<double>" + obj + "</double>");
+		}else if (type.equals("dateTime.iso8601")) {
+			Date d;
+			if(obj instanceof Date) {
+				d = (Date)obj;
+			}else {
+				d = ((Calendar)obj).getTime();
+			}
+			SimpleDateFormat dateformatter = new SimpleDateFormat("yyyyMMdd'T'HH:MM:ss");
+			sb.append("<dateTime.iso8601>");
+			sb.append(dateformatter.format(d) );
+			sb.append("</dateTime.iso8601>");
+		}else if(type.equals("string")) {
+			sb.append("<string>" +obj.toString() + "</string>");
+		}else if(type.equals("double")) {
+			byte[] base64 = (byte[]) obj;
+			sb.append("<base64>");
+			for(int i = 0; i < base64.length; i++) {
+				sb.append(base64[i]);
+			}
+			sb.append("</base64>");
+		}else if (type.equals("array")){
+			if(obj instanceof Object[]) {
+				sb.append("<array><data>");
+				Object[] arrayObj = (Object[])obj;
+				Class<?> commonClass = getCommonSuperClassFromArray(arrayObj);
+
+				for(Object o : arrayObj) {
+					sb.append(serialize(commonClass.cast(o)));
+				}
+				sb.append("</data></array>");
+			}else if(obj instanceof List) {
+				sb.append("<array><data>");
+				List<?> listObj = (List<?>)obj;
+				Class<?> commonClass = getCommonSuperClassFromArray(listObj.toArray());
+
+				for(Object o : listObj) {
+					sb.append(serialize(commonClass.cast(o)));
+				}
+				sb.append("</array></data>");
+			}
+			else if(obj instanceof Collection) {
+				sb.append("<array><data>");
+				Collection<?> collectionObj = (Collection<?>)obj;
+				Class<?> commonClass = getCommonSuperClassFromArray(collectionObj.toArray());
+				Iterator<?> i = collectionObj.iterator();
+
+				while(i.hasNext()) {
+					sb.append(serialize(commonClass.cast(i.next())));
+				}
+				sb.append("</data></array>");
+			}else if(obj instanceof Vector) {
+				Vector<?> vector = (Vector<?>)obj;
+				sb.append("<array><data>");
+				for(Object item : vector) {
+					sb.append(serialize(item));
+				}
+				sb.append("</data></array>");
+			}
+		}  else if ( type.equals("struct")){
+			sb.append("<struct>");
+			Map<?, ?> mapObj = (Map<?, ?>)obj;
+			Iterator<?> i = mapObj.keySet().iterator();
+
+			while(i.hasNext()) {
+				Object key = i.next();
+				sb.append("<member><name>" + key.toString() + "</name>");
+				sb.append(serialize(mapObj.get(key)));
+				sb.append("</member>");
+			}
+			sb.append("</struct>");
+
+		}else if (type.equals("object")){
+			if( obj instanceof XMLRMISerializable){
+			XMLRMISerializable xmlrmiobject = (XMLRMISerializable)obj;
+			ObjectsMap.addObject(obj);
+			sb.append(xmlrmiobject.toXML());
+			}
+		}
+		else 
+			return null;
+		sb.append("</value>");
+		return sb.toString();
+	}
+	
+	
 	/**
 	 * recupère la superclass commune d'un tableau
 	 * @param objs le tableau des objets
@@ -161,59 +256,5 @@ public class Serializer {
 		}
 	}
 	
-	/**
-	 * rend l'objet correspondant à un noeud XML
-	 * @param elem le noeud représentant un objet
-	 * @return l'objet représentant le noeud d'un élément
-	 */
-	public static Object getValueFromElement(Node elem) {
-			String type = elem.getNodeName();
-			
-			if(type == "int") {
-				return Integer.getInteger(elem.getTextContent());
-			}else if(type == "boolean") {
-				return Boolean.parseBoolean(elem.getTextContent());
-			}else if(type == "double") {
-				return Double.parseDouble(elem.getTextContent());
-			}else if(type == "dateTime.iso8601") {
-				return null;
-			}else if (type =="string") {
-				return elem.getTextContent();
-			}else if (type ==  "base64") {
-				return null;
-			}else if(type == "object") {
-				NamedNodeMap attributes= elem.getAttributes();
-				Attr nodeAttr = (Attr)attributes.item(0);
-				String elementKey = nodeAttr.getValue();
-				
-				//Get the right object from the map
-				Object objectFound = ObjectsMap.getObject(elementKey);
-				if(objectFound == null) {
-					return null;
-				}
-				System.out.println(objectFound.toString());
-				XMLRMISerializable objectFoundRmi = (XMLRMISerializable) objectFound;
-				objectFoundRmi.updateFromXML((Element)elem);
-				return objectFoundRmi;
-			}else if (type == "array") {
-				NodeList objs = ((Element)elem).getElementsByTagName("value");
-				int n = objs.getLength();
-				ArrayList<Object> objsArray = new ArrayList<Object>();
-				ArrayList<Object> castedObjsArray = new ArrayList<Object>();
-				
-				for(int i = 0; i < n; i++) {
-					//A Adapter lors de la rencontre d'un objet
-					objsArray.add(getValueFromElement(objs.item(i)));
-				}
-				
-				Class<?> classes = getCommonSuperClassFromArray(objsArray.toArray());
-				for(int i = 0; i < n; i++) {
-					//A Adapter lors de la rencontre d'un objet
-					castedObjsArray.add(classes.cast(objsArray.get(i)));
-				}
-				return castedObjsArray.toArray();
-			}else {
-				return null;
-			}
-	}
+	
 }
