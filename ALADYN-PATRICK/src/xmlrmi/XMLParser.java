@@ -2,7 +2,10 @@ package xmlrmi;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -67,28 +70,36 @@ public class XMLParser {
 	 * @return la liste des paramêtres rendus par le serveur
 	 */
 	public static ArrayList<Object> parseResponse(String response){
-		ArrayList<Object> paramsList = new ArrayList<Object>();
-		
-		try {
-			Document db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-			InputSource is = new InputSource();
-			is.setCharacterStream(new StringReader(response));
-			Object value = null;
-			Document doc = db.parse(is);
-			NodeList nodes = doc.getElementsByTagName("methodResponse");
-			Element methodResponseElement = (Element)nodes.item(0);
-			NodeList nodesParams = methodResponseElement.getElementsByTagName("params");
-			Element paramsElement = (Element)nodesParams.item(0);
-			NodeList nodesParam = paramsElement.getElementsByTagName("param");
+			ArrayList<Object> paramsList = new ArrayList<Object>();
+			try {
+				DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+				InputSource is = new InputSource();
+				is.setCharacterStream(new StringReader(response));
+				Object value= null;
+				Document doc;
 
-			for(int i = 0; i < nodesParam.getLength(); i++) {
-				Element paramElement = (Element)nodesParam.item(i);
-				value = Serializer.getValueFromElement(parseValue(paramElement)); 
-				
-				paramsList.add(value);
-				//System.out.println(paramElement.toString());
-			}
-			//NodeList nodes1 = doc.getElementsByTagName("object");
+
+				doc = db.parse(is);
+				NodeList nodes = doc.getElementsByTagName("methodResponse");
+
+				Element methodResponseElement = (Element) nodes.item(0);
+				NodeList nodesParams = methodResponseElement.getElementsByTagName("params");
+
+				Element paramsElement =  (Element) nodesParams.item(0);
+				NodeList nodesParam = paramsElement.getElementsByTagName("param");
+
+				for(int i = 0; i < nodesParam.getLength(); i++)
+				{
+					Element paramElement = (Element) nodesParam.item(i);
+					Node childNode = parseValue(paramElement) ;
+					if(childNode != null){
+						value = Serializer.getValueFromElement(childNode); 	
+						paramsList.add(value);	
+					}
+					//System.out.println(paramElement.toString());
+				}
+
+				//NodeList nodes1 = doc.getElementsByTagName("object");
 		}catch(IOException e) {
 			System.out.println("error in/out with file");
 		}catch(ParserConfigurationException e) {
@@ -112,27 +123,34 @@ public class XMLParser {
 			DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			InputSource is = new InputSource();
 			is.setCharacterStream(new StringReader(call));
-			Document doc = db.parse(is);
+			Document doc;
+
+
+			doc = db.parse(is);
 			NodeList nodes = doc.getElementsByTagName("methodCall");
-			Element methodCallElement = (Element)nodes.item(0);
+
+			Element methodCallElement = (Element) nodes.item(0);
 			NodeList nodesMethod = methodCallElement.getElementsByTagName("methodName");
-			Element methodNameElement = (Element)nodesMethod.item(0);
-			methodName = getCharacterDataFromElement(methodNameElement);
+
+			Node methodNameElement =  nodesMethod.item(0);
+			methodName = methodNameElement.getTextContent();
+
 			NodeList nodesParams = methodCallElement.getElementsByTagName("params");
-			Element paramsElement = (Element)nodesParams.item(0);
+
+			Element paramsElement =  (Element) nodesParams.item(0);
 			NodeList nodesParam = paramsElement.getElementsByTagName("param");
 
-			for(int i = 0; i < nodesParam.getLength(); i++) {
+			for(int i = 0; i < nodesParam.getLength(); i++)
+			{
+
 				Element paramElement = (Element) nodesParam.item(i);
 				NodeList nodesValue = paramElement.getElementsByTagName("value");
+
 				Element elementValue = (Element) nodesValue.item(0);
+
 				Node valueChild = elementValue.getFirstChild();
-				
-				if(valueChild.getNodeType() == Node.ELEMENT_NODE) {
+				if (valueChild.getNodeType() == Node.ELEMENT_NODE){
 					paramsList.add(createObjectFromElement((Element)valueChild));
-				}else {
-					Element valueObjectChild = (Element)(elementValue.getElementsByTagName("object").item(0));
-					paramsList.add(createObjectFromElement((Element)valueObjectChild));
 				}
 			}
 			return methodName;
@@ -171,39 +189,41 @@ public class XMLParser {
 	public static Object createObjectFromElement(Element element) {
 		String oid;
 		BuildObject obj;
-		
-		if(element.getNodeName() == "object") {
-			oid = element.getAttribute("oid");
-			obj = new BuildObject("Object" + oid);
-			obj.addField("private String oid=\""+oid + "\";" );
+		if ( element.getNodeName() == "object") 
+		{
+			oid =element.getAttribute("oid");
+			obj = new BuildObject("Object" + element.getAttribute("type"));
+			obj.addStringField("oid",oid);
 			NodeList nodesFieldList = element.getElementsByTagName("field");
-			for(int j = 0; j< nodesFieldList.getLength(); j++) {
-				Element fieldElement = (Element)nodesFieldList.item(j);
+			for (int j = 0; j< nodesFieldList.getLength(); j++ )
+			{
+				Element fieldElement = (Element) nodesFieldList.item(j);
 				addFieldforObjectFromElement(fieldElement, obj);
 			}
-			
 			NodeList nodesMethodsList = element.getElementsByTagName("method");
-			Element methodElement;
-			for(int j = 0; j< nodesMethodsList.getLength(); j++) {
-				methodElement = (Element)nodesMethodsList.item(j);
+			Node methodElement;
+			for (int j = 0; j< nodesMethodsList.getLength(); j++ )
+			{
+				methodElement = nodesMethodsList.item(j);
 				addMethodforObjectFromElement(methodElement, obj);
 			}
-			
-			obj.addSuperClass("ObjectSerializable");
+			obj.addSuperClass("tools.ObjectSerializable");
 			try {
 				return obj.getMyClass().newInstance();
-			}catch (InstantiationException e) {
-				System.out.println(e + "error instantiating the object");
+			} catch (InstantiationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 				return null;
 			} catch (IllegalAccessException e) {
-				System.out.println(e + "error accessing the object");
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 				return null;
 			}
-		}else if(element.getNodeName() == "integer") {
-			return new Integer(getCharacterDataFromElement(element));
-		}else if(element.getNodeName() == "double") {
-			return new Double(getCharacterDataFromElement(element));
-		}else {
+		} else if (element.getNodeName() == "int") {
+			return new Integer(((Node)element).getTextContent());
+		}  else if (element.getNodeName() == "double") {
+			return new Double(((Node)element).getTextContent());
+		} else {
 			return null;
 		}
 	}
@@ -215,23 +235,73 @@ public class XMLParser {
 	* @return 
 	*/	
 	public static void addFieldforObjectFromElement(Element fieldElement, BuildObject bo) {
-		String fieldName = fieldElement.getAttribute("name");
-		Element valueElementContent = parseValue(fieldElement);
+		String fieldName;
+		fieldName = fieldElement.getAttribute("name");
+		Node valueElementContent = parseValue(fieldElement);
+		String fieldValue = valueElementContent.getTextContent();
 
+		if (valueElementContent.getNodeName() == "int") 
+		{
+			bo.addIntField(fieldName, Integer.parseInt(fieldValue));
+		}  
+		else if (valueElementContent.getNodeName() == "double")
+		{
+			bo.addDoubleField(fieldName,Double.parseDouble(fieldValue));
+		} 
+		else if (valueElementContent.getNodeName() == "string")
+		{
+			bo.addStringField(fieldName,fieldValue);
+		}
+		else if (valueElementContent.getNodeName() == "boolean")
+		{
+			bo.addBoolField(fieldName, Boolean.parseBoolean(fieldValue)) ;
+		}
+		else if (valueElementContent.getNodeName() == "dateTime.iso8601")
+		{
+			SimpleDateFormat dateformatter = new SimpleDateFormat("yyyyMMdd'T'HH:MM:ss");
+			Date d;
+			try {
+				d = dateformatter.parse(fieldValue);
+				dateformatter.applyPattern("yyyy','MM','dd','HH','MM','ss");
+				bo.addDateField(fieldName,dateformatter.format(d)) ;
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
+		else if (valueElementContent.getNodeName() == "base64")
+		{
+			//TODO
+			//return "public Byte " + fieldName + " = \"" + fieldValue + "\";" ;
+		}
+		else if (valueElementContent.getNodeName() == "array")
+		{
+			NodeList dataElement = ((Element)valueElementContent).getElementsByTagName("data");
+			if (dataElement.getLength() == 1){
+				NodeList arrayItemList =((Element) dataElement.item(0)).getElementsByTagName("value");
+
+				//bo.addField(fieldName, CtClass.booleanType, ) ;
+			}
+			else
+			{
+
+			}
+		}
 		//Construire la chaine de caractere permettant de creer le champ
-		bo.addField(getStringForField(fieldName, valueElementContent));
+		//bo.addField(fieldName,getType(valueElementContent),getInitializer(valueElementContent));
 	}
 
 	/**
 	* ajoute la methode pour l'object depuis l'élément du DOM
-	* @param methodElement l'élément du DOM correspondant à la methode
+	* @param methodElement le noeud du DOM correspondant à la methode
 	* @param bo l'objet a construire
 	*/	
-	public static void addMethodforObjectFromElement(Element methodElement, BuildObject bo) {
-		String methodLanguage = methodElement.getAttribute("language");
-		
-		if(methodLanguage.equals("java")) {
-			bo.addMethod(getCharacterDataFromElement(methodElement));
+	public static void addMethodforObjectFromElement (Node methodElement, BuildObject bo) {
+		String methodLanguage;
+		methodLanguage= ((Element)methodElement).getAttribute("language");
+		if( methodLanguage.equals("java")){
+			bo.addMethod(methodElement.getTextContent());
 		}
 
 	}

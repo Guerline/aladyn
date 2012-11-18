@@ -9,7 +9,7 @@ import client.Serializer;
 import xmlrmi.XMLRMISerializable;
 
 //Classe concrete representant un objet serializable
-public class ObjetSerializable implements XMLRMISerializable {
+public class ObjectSerializable implements XMLRMISerializable {
 	
 	/**
 	 * traduit ubn objet vers un format XML

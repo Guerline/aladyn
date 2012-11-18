@@ -123,12 +123,12 @@ public class BuildObject {
 	 * @param minutes les minutes de la date
 	 * @param seconds les secondes de la date
 	 */
-	public void addDateField(String fieldName, String type, int year, int month, int day, int hours, int minute, int seconds) {
+	public void addDateField(String fieldName, String date) {
 		CtField field;
 		
 		checkFrozen();
 		try {
-			field = CtField.make("java.util.Date " + fieldName + " = new java.util.GregorianCalendar(" + year + "," + month + "," + day + "," + hours + "," + minute + "," + seconds + ").getTime();",  buildClass);
+			field = CtField.make("java.util.GregorianCalendar " + fieldName + " = new java.util.GregorianCalendar("+ date + ");",  buildClass);
 			buildClass.addField(field);
 		}catch(CannotCompileException e) {
 			System.err.println(e + "error building the field");

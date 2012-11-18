@@ -85,7 +85,7 @@ public class Updater {
 			}
 		}else if (type.equals(String.class)) {
 			try {
-				f.setLong(obj, (Long) paramValue);
+				f.set(obj,paramValue);
 			}catch (IllegalArgumentException e) {
 				System.err.println(e + "error setting the field with the argument");
 			}catch (IllegalAccessException e) {
