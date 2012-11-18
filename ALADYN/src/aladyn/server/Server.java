@@ -35,7 +35,7 @@ public class Server {
 			{
 				methodCall = (String)in.readObject();
 				methodName = XMLParser.parseCall(methodCall, arrayParams);
-				
+				System.out.println(methodName+ "hey");
 				for( Object obj :arrayParams ) {
 					System.out.println("server> " + obj.toString());
 				}

@@ -13,6 +13,7 @@ import java.util.Vector;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import aladyn.ObjectsMap;
@@ -176,18 +177,18 @@ public class Serializer {
 		}
 	}
 	
-	public static Object getValueFromElement( Element elem) {
-		String type=elem.getTagName();
+	public static Object getValueFromElement(Node elem) {
+		String type=elem.getNodeName();
 		if(type == "int") {
-			return Integer.getInteger(XMLParser.getCharacterDataFromElement(elem));
+			return Integer.getInteger(elem.getTextContent());
 		}else if(type == "boolean") {
-			return Boolean.parseBoolean(XMLParser.getCharacterDataFromElement(elem));
+			return Boolean.parseBoolean(elem.getTextContent());
 		}else if(type == "double") {
-			return Double.parseDouble(XMLParser.getCharacterDataFromElement(elem));
+			return Double.parseDouble(elem.getTextContent());
 		}else if(type == "dateTime.iso8601") {
 			return null;
 		}else if (type =="string") {
-			return XMLParser.getCharacterDataFromElement(elem);
+			return elem.getTextContent();
 		}else if (type ==  "base64") {
 			return null;
 		}else if(type == "object") {
@@ -203,18 +204,18 @@ public class Serializer {
 			}
 			System.out.println(objectFound.toString());
 			XMLRMISerializable objectFoundRmi = (XMLRMISerializable) objectFound;
-			objectFoundRmi.updateFromXML(elem);
+			objectFoundRmi.updateFromXML((Element)elem);
 			return objectFoundRmi;
 		}
 		else if (type == "array"){
-			NodeList objs = elem.getElementsByTagName("value");
+			NodeList objs = ((Element)elem).getElementsByTagName("value");
 			int n = objs.getLength();
 			ArrayList<Object> objsArray = new ArrayList<Object>();
 			ArrayList<Object> castedObjsArray = new ArrayList<Object>();
 			for(int i = 0; i < n ; i++)
 			{
 				//A Adapter lors de la rencontre d'un objet
-				objsArray.add(getValueFromElement((Element)objs.item(i)));
+				objsArray.add(getValueFromElement(objs.item(i)));
 			}
 			Class<?> classes = getCommonSuperClassFromArray(objsArray.toArray());
 			for(int i = 0; i <n; i++)

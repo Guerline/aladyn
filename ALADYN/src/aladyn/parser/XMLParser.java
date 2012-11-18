@@ -48,7 +48,7 @@ public class XMLParser {
 	 * @param e l'element du DOM dont on extrait la valeur
 	 * @return  valeur de l'élément
 	 */
-	public static String getCharacterDataFromElement(Element e) {
+	/*public static String getCharacterDataFromElement(Element e) {
 		Node child = e.getFirstChild();
 		if (child instanceof CharacterData)
 		{
@@ -56,7 +56,7 @@ public class XMLParser {
 			return cd.getData();
 		}
 		return "";
-	}
+	}*/
 
 	/**
 	 * Méthode permettant au serveur de parser ce qu'il recoit du client. Cela remplit un tableau de paramètres
@@ -87,9 +87,9 @@ public class XMLParser {
 			for(int i = 0; i < nodesParam.getLength(); i++)
 			{
 				Element paramElement = (Element) nodesParam.item(i);
-				Element childElement = parseValue(paramElement) ;
-				if(childElement != null){
-					value = Serializer.getValueFromElement(childElement); 	
+				Node childNode = parseValue(paramElement) ;
+				if(childNode != null){
+					value = Serializer.getValueFromElement(childNode); 	
 					paramsList.add(value);	
 				}
 				//System.out.println(paramElement.toString());
@@ -133,8 +133,8 @@ public class XMLParser {
 			Element methodCallElement = (Element) nodes.item(0);
 			NodeList nodesMethod = methodCallElement.getElementsByTagName("methodName");
 
-			Element methodNameElement = (Element) nodesMethod.item(0);
-			methodName =  getCharacterDataFromElement(methodNameElement);
+			Node methodNameElement =  nodesMethod.item(0);
+			methodName = methodNameElement.getTextContent();
 
 			NodeList nodesParams = methodCallElement.getElementsByTagName("params");
 
@@ -153,12 +153,6 @@ public class XMLParser {
 				if (valueChild.getNodeType() == Node.ELEMENT_NODE){
 					paramsList.add(createObjectFromElement((Element)valueChild));
 				}
-				else {
-					Element valueObjectChild = (Element)(elementValue.getElementsByTagName("object").item(0));
-					System.out.println(createObjectFromElement((Element)valueObjectChild).toString() + "hahaha");
-					paramsList.add(createObjectFromElement((Element)valueObjectChild));
-				}
-
 			}
 			return methodName;
 		} 
@@ -178,7 +172,7 @@ public class XMLParser {
 		return null;
 	}
 
-	public static Element parseValue(Element element){
+	public static Node parseValue(Element element){
 		NodeList nodesValue = element.getElementsByTagName("value");
 		Element elementValue = (Element) nodesValue.item(0);
 		Node valueChild = elementValue.getFirstChild();
@@ -187,10 +181,10 @@ public class XMLParser {
 		if (valueChild.getNodeValue() == "void"){
 			return null;
 		} else if (valueChild.getNodeType() == Node.ELEMENT_NODE){
-			return  (Element)valueChild;
+			return  valueChild;
 		}
 		else {
-			return (Element)(elementValue.getElementsByTagName("object").item(0));
+			return elementValue.getElementsByTagName("object").item(0);
 		}
 	}
 
@@ -210,10 +204,10 @@ public class XMLParser {
 				addFieldforObjectFromElement(fieldElement, obj);
 			}
 			NodeList nodesMethodsList = element.getElementsByTagName("method");
-			Element methodElement;
+			Node methodElement;
 			for (int j = 0; j< nodesMethodsList.getLength(); j++ )
 			{
-				methodElement = (Element) nodesMethodsList.item(j);
+				methodElement = nodesMethodsList.item(j);
 				addMethodforObjectFromElement(methodElement, obj);
 			}
 			obj.addSuperClass("aladyn.ObjectSerializable");
@@ -229,9 +223,9 @@ public class XMLParser {
 				return null;
 			}
 		} else if (element.getNodeName() == "int") {
-			return new Integer(getCharacterDataFromElement(element));
+			return new Integer(((Node)element).getTextContent());
 		}  else if (element.getNodeName() == "double") {
-			return new Double(getCharacterDataFromElement(element));
+			return new Double(((Node)element).getTextContent());
 		} else {
 			return null;
 		}
@@ -240,8 +234,8 @@ public class XMLParser {
 	public static void addFieldforObjectFromElement ( Element fieldElement, BuildObject bo) {
 		String fieldName;
 		fieldName = fieldElement.getAttribute("name");
-		Element valueElementContent = parseValue(fieldElement);
-		String fieldValue = getCharacterDataFromElement(valueElementContent);
+		Node valueElementContent = parseValue(fieldElement);
+		String fieldValue = valueElementContent.getTextContent();
 
 		if (valueElementContent.getNodeName() == "int") 
 		{
@@ -280,7 +274,7 @@ public class XMLParser {
 		}
 		else if (valueElementContent.getNodeName() == "array")
 		{
-			NodeList dataElement = valueElementContent.getElementsByTagName("data");
+			NodeList dataElement = ((Element)valueElementContent).getElementsByTagName("data");
 			if (dataElement.getLength() == 1){
 				NodeList arrayItemList =((Element) dataElement.item(0)).getElementsByTagName("value");
 
@@ -295,11 +289,11 @@ public class XMLParser {
 		//bo.addField(fieldName,getType(valueElementContent),getInitializer(valueElementContent));
 	}
 
-	public static void addMethodforObjectFromElement ( Element methodElement, BuildObject bo) {
+	public static void addMethodforObjectFromElement (Node methodElement, BuildObject bo) {
 		String methodLanguage;
-		methodLanguage= methodElement.getAttribute("language");
+		methodLanguage= ((Element)methodElement).getAttribute("language");
 		if( methodLanguage.equals("java")){
-			bo.addMethod(getCharacterDataFromElement(methodElement));
+			bo.addMethod(methodElement.getTextContent());
 		}
 
 	}
