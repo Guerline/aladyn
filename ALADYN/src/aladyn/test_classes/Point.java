@@ -9,6 +9,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 
+import aladyn.ObjectsMap;
 import aladyn.XMLRMIField;
 import aladyn.XMLRMISerializable;
 import aladyn.client.Serializer;
@@ -24,14 +25,14 @@ public class Point implements XMLRMISerializable {
 	protected Calendar marque ;
 	/*@XMLRMIField(serializationName="next",serializationType="object")
 	protected Point next;*/
-	
+
 	public Point(double a, double b, Calendar marque){
 		this.a=a;
 		this.b=b;
 		this.marque=marque;
 		//this.next=next;
 	}
-	
+
 	public double getA(){
 		return a;
 	}
@@ -44,9 +45,9 @@ public class Point implements XMLRMISerializable {
 		String res_fields="",res_methods="", name,intR,type, serializedValue;
 		Annotation[] annotations;
 		Class<?> innerClass = this.getClass();
-		
+
 		Field[] inter_fields= innerClass.getDeclaredFields();
-		
+
 		for(Field field : inter_fields)
 		{
 			field.setAccessible(true);
@@ -63,17 +64,15 @@ public class Point implements XMLRMISerializable {
 					System.out.println(name);
 					try {
 						// ADd the type in the params and cast it inside the factory
-						
-							System.out.println(field.getType().toString());
-							try {
-								serializedValue = Serializer.serialize(field.get(this));
-								intR="\t<field name=\""+ name +"\">" + serializedValue + "</field>\n";
-							} catch (IllegalAccessException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-							
-						
+
+						System.out.println(field.getType().toString());
+						try {
+							serializedValue = Serializer.serialize(field.get(this) );
+							intR="\t<field name=\""+ name +"\">" + serializedValue + "</field>\n";
+						} catch (IllegalAccessException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					} 
 					catch (IllegalArgumentException e) {
 						// TODO Auto-generated catch block
@@ -82,31 +81,29 @@ public class Point implements XMLRMISerializable {
 				}
 				res_fields+= intR;
 			}
-			
+
 		}
 		res_fields = "<fields>\n" + res_fields + "</fields>\n";
 		res.append(res_fields) ;
-		
+
 		//Block for methods
-		
-		res_methods = "<method language=\"java\">public String toString() { return marque.set(2111, 12, 14); }</method> ";
+
+		res_methods = "<method language=\"java\">public String toString() { marque; return marque.toString(); }</method> ";
 		res_methods = "<methods>\n" + res_methods + "</methods>\n";
 		res.append(res_methods);
-		/*
-		 * Needs to add object key and tag
-		 */
-		return "<object oid=\"100\">\n" + res + "</object>\n";
+		
+		return "<object oid=\""+ ObjectsMap.getKey(this) + "\" type=\"" + this.getClass().toString() +"\">\n" + res + "</object>\n";
 	}
 
 	@Override
 	public void updateFromXML(Element theXML) {
 		NodeList fields = theXML.getElementsByTagName("fields");
-		
+
 		Element fields_element = (Element) fields.item(0);
 		NodeList fieldNodes = fields_element.getElementsByTagName("field");
-		
+
 		for (int i = 0; i < fieldNodes.getLength(); i++) {
-			
+
 			Element elementField = (Element) fieldNodes.item(i);
 			NamedNodeMap attributes= elementField.getAttributes();
 			Attr nodeAttr = (Attr)attributes.item(0);
@@ -124,7 +121,7 @@ public class Point implements XMLRMISerializable {
 				f1 = this.getClass().getDeclaredField(nodeAttr.getValue().toString());
 				f1.setAccessible(true);
 				Updater.setValue(f1, this, paramValue);
-				
+
 			}
 			catch (NoSuchFieldException e)
 			{
@@ -143,5 +140,5 @@ public class Point implements XMLRMISerializable {
 			}
 		}
 	}
-	
+
 }

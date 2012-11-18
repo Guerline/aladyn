@@ -3,14 +3,9 @@ package aladyn.server;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-
-import aladyn.ObjectSerializable;
-import aladyn.test_classes.*;
 import aladyn.parser.XMLParser;
 
 public class Server {
@@ -24,6 +19,7 @@ public class Server {
 	public void receive() {
 		ArrayList<Object> arrayParams = new ArrayList<Object>(); 
 		String methodName;
+		MethodCaller methodCaller = new MethodCaller();
 		
 		try
 		{
@@ -39,12 +35,12 @@ public class Server {
 			{
 				methodCall = (String)in.readObject();
 				methodName = XMLParser.parseCall(methodCall, arrayParams);
-				System.out.println("hey hey hey!");
+				
 				for( Object obj :arrayParams ) {
 					System.out.println("server> " + obj.toString());
 				}
-
-				send( callMethod(methodName, arrayParams));
+				String response = methodCaller.callMethod(methodName, arrayParams, this);
+				send(response);
 				
 			}
 			catch(ClassNotFoundException classnot){
@@ -81,42 +77,5 @@ public class Server {
 		System.out.println(o.toString() + "heykkkkkkkkkkkkkkk");
 	}
 
-	
-	public String callMethod(String methodName, ArrayList<Object> arrayParams){
-		BuildResponse br = new BuildResponse();
-		try {
-			Object[] objects = arrayParams.toArray();
-			Method method = this.getClass().getDeclaredMethod(methodName, Object.class, double.class);
-			Object returnedObject = method.invoke(this, objects);
-			//ObjectSerializable objSer = (ObjectSerializable)arrayParams.get(0);
-			//System.out.println(objSer.toXML());
-			// Send back the response with the object returned
-			if(method.getReturnType() != Void.TYPE){
-				arrayParams.add(0, returnedObject);
-			}
-			
-			return br.buildXmlResponse(arrayParams);
-		} catch (NoSuchMethodException e) 
-		{
-			return br.buildXmlFaultResponse(2, "No such method");
-		}
-		catch (SecurityException e) {
-			// TODO Auto-generated catch block
-			
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-		catch (IllegalArgumentException e) 
-		{
-			return br.buildXmlFaultResponse(2, "Wrong type of arguments given");
-		} 
-		catch (InvocationTargetException e)
-		{
-			return br.buildXmlFaultResponse(3, "Problem  occured in method invocation");
-		}
-		return br.buildXmlFaultResponse(3, "Problem  occured in method invocation");
-	}
 
 }

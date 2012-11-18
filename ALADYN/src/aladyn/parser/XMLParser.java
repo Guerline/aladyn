@@ -4,12 +4,7 @@ import java.io.StringReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-
-import javassist.CtClass;
-import javassist.CtField;
-import javassist.CtField.Initializer;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -26,7 +21,6 @@ import aladyn.client.Serializer;
 import aladyn.server.BuildObject;
 
 public class XMLParser {
-	Request request;
 
 	/*public static void main(String arg[]){
 		String xmlRecords = "<methodCall><methodName>haha</methodName><params><param><value><double>1.2</double></value></param>" +
@@ -93,8 +87,11 @@ public class XMLParser {
 			for(int i = 0; i < nodesParam.getLength(); i++)
 			{
 				Element paramElement = (Element) nodesParam.item(i);
-				value = Serializer.getValueFromElement(parseValue(paramElement) ); 
-				paramsList.add(value);
+				Element childElement = parseValue(paramElement) ;
+				if(childElement != null){
+					value = Serializer.getValueFromElement(childElement); 	
+					paramsList.add(value);	
+				}
 				//System.out.println(paramElement.toString());
 			}
 
@@ -122,7 +119,7 @@ public class XMLParser {
 	public static String parseCall(String call, ArrayList<Object> paramsList){
 		DocumentBuilder db;
 		String methodName;
-		
+
 		try {
 			db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			InputSource is = new InputSource();
@@ -135,10 +132,10 @@ public class XMLParser {
 
 			Element methodCallElement = (Element) nodes.item(0);
 			NodeList nodesMethod = methodCallElement.getElementsByTagName("methodName");
-			
+
 			Element methodNameElement = (Element) nodesMethod.item(0);
 			methodName =  getCharacterDataFromElement(methodNameElement);
-			
+
 			NodeList nodesParams = methodCallElement.getElementsByTagName("params");
 
 			Element paramsElement =  (Element) nodesParams.item(0);
@@ -146,12 +143,12 @@ public class XMLParser {
 
 			for(int i = 0; i < nodesParam.getLength(); i++)
 			{
-				
+
 				Element paramElement = (Element) nodesParam.item(i);
 				NodeList nodesValue = paramElement.getElementsByTagName("value");
 
 				Element elementValue = (Element) nodesValue.item(0);
-					
+
 				Node valueChild = elementValue.getFirstChild();
 				if (valueChild.getNodeType() == Node.ELEMENT_NODE){
 					paramsList.add(createObjectFromElement((Element)valueChild));
@@ -161,7 +158,7 @@ public class XMLParser {
 					System.out.println(createObjectFromElement((Element)valueObjectChild).toString() + "hahaha");
 					paramsList.add(createObjectFromElement((Element)valueObjectChild));
 				}
-							
+
 			}
 			return methodName;
 		} 
@@ -185,22 +182,26 @@ public class XMLParser {
 		NodeList nodesValue = element.getElementsByTagName("value");
 		Element elementValue = (Element) nodesValue.item(0);
 		Node valueChild = elementValue.getFirstChild();
-		if (valueChild.getNodeType() == Node.ELEMENT_NODE){
+		System.out.println(nodesValue.item(0).getTextContent() + valueChild.getNodeValue());
+			
+		if (valueChild.getNodeValue() == "void"){
+			return null;
+		} else if (valueChild.getNodeType() == Node.ELEMENT_NODE){
 			return  (Element)valueChild;
 		}
 		else {
 			return (Element)(elementValue.getElementsByTagName("object").item(0));
 		}
 	}
-	
-	
+
+
 	public static Object createObjectFromElement ( Element element) {
 		String oid;
 		BuildObject obj;
 		if ( element.getNodeName() == "object") 
 		{
 			oid =element.getAttribute("oid");
-			obj = new BuildObject("Object" + oid);
+			obj = new BuildObject("Object" + element.getAttribute("type"));
 			obj.addStringField("oid",oid);
 			NodeList nodesFieldList = element.getElementsByTagName("field");
 			for (int j = 0; j< nodesFieldList.getLength(); j++ )
@@ -208,13 +209,13 @@ public class XMLParser {
 				Element fieldElement = (Element) nodesFieldList.item(j);
 				addFieldforObjectFromElement(fieldElement, obj);
 			}
-			 NodeList nodesMethodsList = element.getElementsByTagName("method");
-			 Element methodElement;
-			 for (int j = 0; j< nodesMethodsList.getLength(); j++ )
-			 {
+			NodeList nodesMethodsList = element.getElementsByTagName("method");
+			Element methodElement;
+			for (int j = 0; j< nodesMethodsList.getLength(); j++ )
+			{
 				methodElement = (Element) nodesMethodsList.item(j);
 				addMethodforObjectFromElement(methodElement, obj);
-			 }
+			}
 			obj.addSuperClass("aladyn.ObjectSerializable");
 			try {
 				return obj.getMyClass().newInstance();
@@ -240,12 +241,8 @@ public class XMLParser {
 		String fieldName;
 		fieldName = fieldElement.getAttribute("name");
 		Element valueElementContent = parseValue(fieldElement);
-		Initializer init;
-		CtClass type;
-		
 		String fieldValue = getCharacterDataFromElement(valueElementContent);
-		StringBuilder sb = new StringBuilder();
-		
+
 		if (valueElementContent.getNodeName() == "int") 
 		{
 			bo.addIntField(fieldName, Integer.parseInt(fieldValue));
@@ -264,8 +261,7 @@ public class XMLParser {
 		}
 		else if (valueElementContent.getNodeName() == "dateTime.iso8601")
 		{
-			SimpleDateFormat dateformatter = new SimpleDateFormat
-					  ("yyyyMMdd'T'HH:MM:ss");
+			SimpleDateFormat dateformatter = new SimpleDateFormat("yyyyMMdd'T'HH:MM:ss");
 			Date d;
 			try {
 				d = dateformatter.parse(fieldValue);
@@ -275,7 +271,7 @@ public class XMLParser {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
+
 		}
 		else if (valueElementContent.getNodeName() == "base64")
 		{
@@ -287,32 +283,32 @@ public class XMLParser {
 			NodeList dataElement = valueElementContent.getElementsByTagName("data");
 			if (dataElement.getLength() == 1){
 				NodeList arrayItemList =((Element) dataElement.item(0)).getElementsByTagName("value");
-				
-			//bo.addField(fieldName, CtClass.booleanType, ) ;
-		}
-		else
-		{
-			
-		}
+
+				//bo.addField(fieldName, CtClass.booleanType, ) ;
+			}
+			else
+			{
+
+			}
 		}
 		//Construire la chaine de caractere permettant de creer le champ
 		//bo.addField(fieldName,getType(valueElementContent),getInitializer(valueElementContent));
 	}
-	
+
 	public static void addMethodforObjectFromElement ( Element methodElement, BuildObject bo) {
 		String methodLanguage;
 		methodLanguage= methodElement.getAttribute("language");
-		 if( methodLanguage.equals("java")){
-			 	bo.addMethod(getCharacterDataFromElement(methodElement));
-		 }
-		
+		if( methodLanguage.equals("java")){
+			bo.addMethod(getCharacterDataFromElement(methodElement));
+		}
+
 	}
-	
-	
+
+
 	/*public static String getStringForField( String fieldName, Element valueElementContent){
 		String fieldValue = getCharacterDataFromElement(valueElementContent);
 		StringBuilder sb = new StringBuilder();
-		
+
 		if (valueElementContent.getNodeName() == "int") 
 		{
 			return "public int " + fieldName + "=" + fieldValue + ";";
@@ -336,7 +332,7 @@ public class XMLParser {
 		else if (valueElementContent.getNodeName() == "array")
 		{
 			sb.append("public Object[] " + fieldName + "= {");
-			
+
 			sb.append("} ;");
 			return "public Object[] " + fieldName + " = \"" + fieldValue + "\";" ;
 		}
@@ -345,8 +341,8 @@ public class XMLParser {
 			return null;
 		}
 	}
-	
-	
+
+
 	/*public static String getWellFormedValue(Element valueElementContent ){
 		String fieldValue = getCharacterDataFromElement(valueElementContent);
 		String result = "";
@@ -396,11 +392,11 @@ public class XMLParser {
 			}
 		}
 		else if (valueElementContent.getNodeName() == "struct"){
-			
+
 		}
 		else if (valueElementContent.getNodeName() == "datetime.iso8601"){
 			SimpleDateFormat dateformatter = new SimpleDateFormat ("yyyyMMdd'T'HH:MM:ss");
-			
+
 		}
 		return result;
 	}*/

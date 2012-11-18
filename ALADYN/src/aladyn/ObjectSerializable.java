@@ -51,12 +51,7 @@ public class ObjectSerializable implements XMLRMISerializable{
 		}
 		res_fields = "<fields>\n" + res_fields + "</fields>\n";
 		res += res_fields;
-		
-		//Block for methods
-		
-		/*
-		 * Needs to add object key and tag
-		 */
+	
 		return "<object oid=\"" + oid+ "\">\n" + res + "</object>";
 		
 	}

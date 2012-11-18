@@ -24,6 +24,8 @@ public class Serializer {
 	
 	// TESTED
 	public static String serialize (Object obj){
+		if(obj == null)
+			return "<value>void</value>";
 		Class<? extends Object> type = obj.getClass();
 		StringBuilder sb = new StringBuilder();
 		sb.append("<value>");
@@ -126,10 +128,11 @@ public class Serializer {
 	         }
 	         sb.append("</data></array>");
 	      }
-		else
+		else 
 		{
 			System.out.println(obj.getClass().getSuperclass().toString());
 			XMLRMISerializable xmlrmiobject = (XMLRMISerializable) obj;
+			ObjectsMap.addObject(obj);
 			sb.append(xmlrmiobject.toXML());
 		}
 		sb.append("</value>");
@@ -175,13 +178,13 @@ public class Serializer {
 	
 	public static Object getValueFromElement( Element elem) {
 		String type=elem.getTagName();
-		if(type == "integer") {
+		if(type == "int") {
 			return Integer.getInteger(XMLParser.getCharacterDataFromElement(elem));
 		}else if(type == "boolean") {
 			return Boolean.parseBoolean(XMLParser.getCharacterDataFromElement(elem));
 		}else if(type == "double") {
 			return Double.parseDouble(XMLParser.getCharacterDataFromElement(elem));
-		}else if(type == "datetime") {
+		}else if(type == "dateTime.iso8601") {
 			return null;
 		}else if (type =="string") {
 			return XMLParser.getCharacterDataFromElement(elem);
@@ -196,7 +199,7 @@ public class Serializer {
 			//Get the right object from the map
 			Object objectFound = ObjectsMap.getObject(elementKey);
 			if( objectFound == null) {
-				//????????
+				return null;
 			}
 			System.out.println(objectFound.toString());
 			XMLRMISerializable objectFoundRmi = (XMLRMISerializable) objectFound;

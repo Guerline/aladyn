@@ -83,7 +83,7 @@ public class BuildObject {
 		checkFrozen();
 		CtField field;
 		try {
-			field = CtField.make("java.util.Date "+ fieldName + " = new java.util.GregorianCalendar("+ date + ").getTime();",  buildClass);
+			field = CtField.make("java.util.GregorianCalendar " + fieldName + " = new java.util.GregorianCalendar("+ date + ");",  buildClass);
 			buildClass.addField(field);
 		} catch (CannotCompileException e) {
 			// TODO Auto-generated catch block

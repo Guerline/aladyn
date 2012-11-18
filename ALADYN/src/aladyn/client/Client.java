@@ -31,8 +31,9 @@ public class Client {
 			message = (String)in.readObject();
 			//System.out.println("client> " + message);
 			ArrayList<Object> paramsList = new ArrayList<Object>();
+			System.out.println(message);
 			paramsList = XMLParser.parseResponse(message);
-			
+			System.out.println(message);
 			for( Object o : paramsList)
 				System.out.println(o.getClass().getName());
 			//System.out.println(((Point)paramsList.get(0)).getA());
